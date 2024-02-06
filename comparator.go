@@ -18,7 +18,7 @@ import (
 // New((int)0) 表示返回一个 int 类型的比较器
 // New((uint)0) 表示返回一个 uint 类型的比较器
 // New("") 	 表示返回一个 string 类型的比较器
-func New(defaultValue any) any {
+func New(defaultValue any) Type {
 	switch defaultValue.(type) {
 	case string:
 		return String
