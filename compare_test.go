@@ -108,6 +108,12 @@ func show(r int, names ...string) {
 	}
 }
 
+func TestCompareAnySlice(t *testing.T) {
+	s1 := []any{"aitao", []string{"go", "python", "java"}, 100, true, 16.8}
+	s2 := []any{"aitao", []string{"go", "python", "java"}, 100, true, 16.8}
+	fmt.Println(Equals(s1, s2))
+}
+
 func BenchmarkCompare(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

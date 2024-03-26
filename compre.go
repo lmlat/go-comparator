@@ -22,33 +22,18 @@ const (
 )
 
 var (
-	nilValueError      = errors.New("unable to establish a comparative relationship: the parameter has a nil value")
-	typeNotMathError   = errors.New("unable to establish a comparative relationship: type mismatch")
-	valueNotMatchError = errors.New("unable to establish a comparative relationship: value mismatch")
-	invalidError       = errors.New("unable to establish a comparative relationship")
+	nilValueError      = errors.New("comparator: the parameter has a nil value")
+	typeNotMathError   = errors.New("comparator: type mismatch")
+	valueNotMatchError = errors.New("comparator: value mismatch")
+	invalidError       = errors.New("comparator: unable to establish a comparative relationship")
 )
 
-func Less(a, b any) bool {
-	r, _ := compareValue(a, b, false)
-	return r == less
-}
-
-func Greater(a, b any) bool {
-	r, _ := compareValue(a, b, false)
-	return r == greater
-}
-
-func Equals(a, b any) bool {
-	r, _ := compareValue(a, b, false)
-	return r == equal
-}
-
-func Compare(a, b any) int {
+func Compare(a, b interface{}) int {
 	r, _ := compareValue(a, b, false)
 	return r
 }
 
-func compareValue(a, b any, mark bool) (r int, e error) {
+func compareValue(a, b interface{}, mark bool) (r int, e error) {
 	if a == nil || b == nil {
 		if a == b {
 			return equal, nil
@@ -58,11 +43,11 @@ func compareValue(a, b any, mark bool) (r int, e error) {
 			return greater, nilValueError
 		}
 	}
-	typeA, typeB := reflect.TypeOf(a), reflect.TypeOf(b)
-	if typeA != typeB {
+	ta, tb := reflect.TypeOf(a), reflect.TypeOf(b)
+	if ta != tb {
 		return invalid, typeNotMathError // 类型不一致
 	}
-	switch typeA.Kind() {
+	switch ta.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64,
@@ -80,7 +65,7 @@ func compareValue(a, b any, mark bool) (r int, e error) {
 	return invalid, invalidError
 }
 
-func reflectCompareValue(a, b any, va, vb reflect.Value, mark bool) (r int, e error) {
+func reflectCompareValue(a, b interface{}, va, vb reflect.Value, rmark bool) (r int, e error) {
 	if !va.IsValid() || !vb.IsValid() {
 		if o1, o2 := va.IsValid(), vb.IsValid(); o1 == o2 {
 			return equal, nil
@@ -90,11 +75,11 @@ func reflectCompareValue(a, b any, va, vb reflect.Value, mark bool) (r int, e er
 			return greater, nilValueError
 		}
 	}
-	typeA, typeB := va.Type(), vb.Type()
-	if typeA != typeB {
+	ta, tb := va.Type(), vb.Type()
+	if ta != tb {
 		return invalid, typeNotMathError // 类型不一致
 	}
-	switch typeA.Kind() {
+	switch ta.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64,
@@ -105,28 +90,28 @@ func reflectCompareValue(a, b any, va, vb reflect.Value, mark bool) (r int, e er
 	case reflect.Pointer:
 		return comparePointer(a, b, va, vb)
 	case reflect.Struct:
-		return compareStruct(a, b, va, vb, mark)
+		return compareStruct(a, b, va, vb, rmark)
 	case reflect.Array:
 		return reflectCompareSliceValue(a, b, reflect.ValueOf(a), reflect.ValueOf(b))
 	case reflect.Slice:
 		if va.UnsafePointer() == vb.UnsafePointer() {
 			return equal, nil
 		}
-		if elemtyp := typeA.Elem(); isPrimitive(elemtyp.Kind()) || elemtyp.String() == "interface {}" {
-			return compareSliceValue(a, b, va, vb, mark)
+		if elemtyp := ta.Elem(); isPrimitive(elemtyp.Kind()) || elemtyp.String() == "interface {}" {
+			return compareSliceValue(a, b, va, vb, rmark)
 		}
 		return reflectCompareSliceValue(a, b, va, vb)
 	case reflect.Map:
 		if va.UnsafePointer() == vb.UnsafePointer() {
 			return equal, nil
 		}
-		if keytyp := typeA.Key(); isPrimitive(keytyp.Kind()) || keytyp.String() == "interface {}" {
-			return compareMapValue(a, b, va, vb, mark)
+		if keytyp := ta.Key(); isPrimitive(keytyp.Kind()) || keytyp.String() == "interface {}" {
+			return compareMapValue(a, b, va, vb, rmark)
 		}
 		return compareMap(a, b, va, vb)
 	default:
-		var x, y any
-		if !mark {
+		var x, y interface{}
+		if !rmark {
 			x, y = a, b
 		} else {
 			x, y = va.Interface(), vb.Interface()
@@ -138,7 +123,7 @@ func reflectCompareValue(a, b any, va, vb reflect.Value, mark bool) (r int, e er
 	return invalid, invalidError
 }
 
-func comparePrimitiveValue(a, b any) (r int, e error) {
+func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 	switch v1 := a.(type) {
 	case string:
 		if v2 := b.(string); v1 == v2 {
@@ -345,7 +330,7 @@ func reflectComparePrimitiveValue(va, vb reflect.Value) (int, error) {
 	return invalid, invalidError
 }
 
-func comparePointer(a, b any, va, vb reflect.Value) (int, error) {
+func comparePointer(a, b interface{}, va, vb reflect.Value) (int, error) {
 	// 解析多级指针
 	for x, y := va.Elem(), vb.Elem(); va.Kind() == reflect.Pointer; va, vb = x, y {
 	}
@@ -361,8 +346,8 @@ func comparePointer(a, b any, va, vb reflect.Value) (int, error) {
 	return reflectCompareValue(a, b, va, vb, true)
 }
 
-func compareStruct(a, b any, va, vb reflect.Value, mark bool) (r int, e error) {
-	var v1, v2 any
+func compareStruct(a, b interface{}, va, vb reflect.Value, mark bool) (r int, e error) {
+	var v1, v2 interface{}
 	if !mark {
 		v1, v2 = a, b
 	} else {
@@ -407,7 +392,7 @@ func compareStruct(a, b any, va, vb reflect.Value, mark bool) (r int, e error) {
 	}
 }
 
-func compareMap(a, b any, va, vb reflect.Value) (r int, e error) {
+func compareMap(a, b interface{}, va, vb reflect.Value) (r int, e error) {
 	if x, y := va.Len(), vb.Len(); x == y {
 		for _, k := range va.MapKeys() {
 			v1 := va.MapIndex(k)
@@ -442,7 +427,29 @@ func sliceCompareT[T comparable](s1, s2 []T) (r int, e error) {
 	}
 }
 
-func mapCompareT[K comparable, V any](m1, m2 map[K]V) (r int, e error) {
+func sliceCompareAny(s1, s2 []interface{}) (r int, e error) {
+	if x, y := len(s1), len(s2); x == y {
+		for i := 0; i < x; i++ {
+			if asPrimitive(s1[i]) && asPrimitive(s2[i]) {
+				if r, e = comparePrimitiveValue(s1[i], s2[i]); r != equal {
+					return r, e
+				}
+			} else {
+				v1, v2 := reflect.ValueOf(s1[i]), reflect.ValueOf(s2[i])
+				if r, e = reflectCompareValue(s1[i], s2[i], v1, v2, true); r != equal {
+					return r, e
+				}
+			}
+		}
+		return equal, e
+	} else if x < y {
+		return less, nil
+	} else {
+		return greater, nil
+	}
+}
+
+func mapCompareT[K comparable, V interface{}](m1, m2 map[K]V) (r int, e error) {
 	if x, y := len(m1), len(m2); x == y {
 		for k, v1 := range m1 {
 			if v2, exists := m2[k]; exists {
@@ -455,7 +462,6 @@ func mapCompareT[K comparable, V any](m1, m2 map[K]V) (r int, e error) {
 						return r, e
 					}
 				}
-
 			} else {
 				return invalid, valueNotMatchError
 			}
@@ -468,8 +474,8 @@ func mapCompareT[K comparable, V any](m1, m2 map[K]V) (r int, e error) {
 	}
 }
 
-func compareSliceValue(a, b any, va, vb reflect.Value, mark bool) (r int, e error) {
-	var x, y any
+func compareSliceValue(a, b interface{}, va, vb reflect.Value, mark bool) (r int, e error) {
+	var x, y interface{}
 	if !mark {
 		x, y = a, b
 	} else {
@@ -512,13 +518,13 @@ func compareSliceValue(a, b any, va, vb reflect.Value, mark bool) (r int, e erro
 		return sliceCompareT(v1, y.([]complex64))
 	case []complex128:
 		return sliceCompareT(v1, y.([]complex128))
-	case []any:
-		return sliceCompareT(v1, y.([]any))
+	case []interface{}:
+		return sliceCompareAny(v1, y.([]interface{}))
 	}
 	return invalid, nil
 }
 
-func reflectCompareSliceValue(a, b any, va, vb reflect.Value) (r int, e error) {
+func reflectCompareSliceValue(a, b interface{}, va, vb reflect.Value) (r int, e error) {
 	if x, y := va.Len(), vb.Len(); x == y {
 		for i := 0; i < x; i++ {
 			if r, e = reflectCompareValue(a, b, va.Index(i), vb.Index(i), true); r != equal {
@@ -547,7 +553,7 @@ func isPrimitive(k reflect.Kind) bool {
 	}
 }
 
-func asPrimitive(v any) bool {
+func asPrimitive(v interface{}) bool {
 	switch v.(type) {
 	case int, int8, int16, int32, int64,
 		uint, uint8, uint16, uint32, uint64,
@@ -560,8 +566,8 @@ func asPrimitive(v any) bool {
 	}
 }
 
-func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
-	var x, y any
+func compareMapValue(a, b interface{}, va, vb reflect.Value, mark bool) (int, error) {
+	var x, y interface{}
 	if !mark {
 		x, y = a, b
 	} else {
@@ -600,8 +606,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[string]complex64))
 	case map[string]complex128:
 		return mapCompareT(v, y.(map[string]complex128))
-	case map[string]any:
-		return mapCompareT(v, y.(map[string]any))
+	case map[string]interface{}:
+		return mapCompareT(v, y.(map[string]interface{}))
 	case map[bool]string:
 		return mapCompareT(v, y.(map[bool]string))
 	case map[bool]bool:
@@ -634,8 +640,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[bool]complex64))
 	case map[bool]complex128:
 		return mapCompareT(v, y.(map[bool]complex128))
-	case map[bool]any:
-		return mapCompareT(v, y.(map[bool]any))
+	case map[bool]interface{}:
+		return mapCompareT(v, y.(map[bool]interface{}))
 	case map[int]string:
 		return mapCompareT(v, y.(map[int]string))
 	case map[int]bool:
@@ -668,8 +674,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[int]complex64))
 	case map[int]complex128:
 		return mapCompareT(v, y.(map[int]complex128))
-	case map[int]any:
-		return mapCompareT(v, y.(map[int]any))
+	case map[int]interface{}:
+		return mapCompareT(v, y.(map[int]interface{}))
 	case map[int8]string:
 		return mapCompareT(v, y.(map[int8]string))
 	case map[int8]bool:
@@ -702,8 +708,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[int8]complex64))
 	case map[int8]complex128:
 		return mapCompareT(v, y.(map[int8]complex128))
-	case map[int8]any:
-		return mapCompareT(v, y.(map[int8]any))
+	case map[int8]interface{}:
+		return mapCompareT(v, y.(map[int8]interface{}))
 	case map[int16]string:
 		return mapCompareT(v, y.(map[int16]string))
 	case map[int16]bool:
@@ -736,8 +742,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[int16]complex64))
 	case map[int16]complex128:
 		return mapCompareT(v, y.(map[int16]complex128))
-	case map[int16]any:
-		return mapCompareT(v, y.(map[int16]any))
+	case map[int16]interface{}:
+		return mapCompareT(v, y.(map[int16]interface{}))
 	case map[int32]string:
 		return mapCompareT(v, y.(map[int32]string))
 	case map[int32]bool:
@@ -770,8 +776,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[int32]complex64))
 	case map[int32]complex128:
 		return mapCompareT(v, y.(map[int32]complex128))
-	case map[int32]any:
-		return mapCompareT(v, y.(map[int32]any))
+	case map[int32]interface{}:
+		return mapCompareT(v, y.(map[int32]interface{}))
 	case map[int64]string:
 		return mapCompareT(v, y.(map[int64]string))
 	case map[int64]bool:
@@ -804,8 +810,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[int64]complex64))
 	case map[int64]complex128:
 		return mapCompareT(v, y.(map[int64]complex128))
-	case map[int64]any:
-		return mapCompareT(v, y.(map[int64]any))
+	case map[int64]interface{}:
+		return mapCompareT(v, y.(map[int64]interface{}))
 	case map[uint]string:
 		return mapCompareT(v, y.(map[uint]string))
 	case map[uint]bool:
@@ -838,8 +844,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[uint]complex64))
 	case map[uint]complex128:
 		return mapCompareT(v, y.(map[uint]complex128))
-	case map[uint]any:
-		return mapCompareT(v, y.(map[uint]any))
+	case map[uint]interface{}:
+		return mapCompareT(v, y.(map[uint]interface{}))
 	case map[uint8]string:
 		return mapCompareT(v, y.(map[uint8]string))
 	case map[uint8]bool:
@@ -872,8 +878,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[uint8]complex64))
 	case map[uint8]complex128:
 		return mapCompareT(v, y.(map[uint8]complex128))
-	case map[uint8]any:
-		return mapCompareT(v, y.(map[uint8]any))
+	case map[uint8]interface{}:
+		return mapCompareT(v, y.(map[uint8]interface{}))
 	case map[uint16]string:
 		return mapCompareT(v, y.(map[uint16]string))
 	case map[uint16]bool:
@@ -906,8 +912,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[uint16]complex64))
 	case map[uint16]complex128:
 		return mapCompareT(v, y.(map[uint16]complex128))
-	case map[uint16]any:
-		return mapCompareT(v, y.(map[uint16]any))
+	case map[uint16]interface{}:
+		return mapCompareT(v, y.(map[uint16]interface{}))
 	case map[uint32]string:
 		return mapCompareT(v, y.(map[uint32]string))
 	case map[uint32]bool:
@@ -940,8 +946,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[uint32]complex64))
 	case map[uint32]complex128:
 		return mapCompareT(v, y.(map[uint32]complex128))
-	case map[uint32]any:
-		return mapCompareT(v, y.(map[uint32]any))
+	case map[uint32]interface{}:
+		return mapCompareT(v, y.(map[uint32]interface{}))
 	case map[uint64]string:
 		return mapCompareT(v, y.(map[uint64]string))
 	case map[uint64]bool:
@@ -974,8 +980,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[uint64]complex64))
 	case map[uint64]complex128:
 		return mapCompareT(v, y.(map[uint64]complex128))
-	case map[uint64]any:
-		return mapCompareT(v, y.(map[uint64]any))
+	case map[uint64]interface{}:
+		return mapCompareT(v, y.(map[uint64]interface{}))
 	case map[float32]string:
 		return mapCompareT(v, y.(map[float32]string))
 	case map[float32]bool:
@@ -1008,8 +1014,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[float32]complex64))
 	case map[float32]complex128:
 		return mapCompareT(v, y.(map[float32]complex128))
-	case map[float32]any:
-		return mapCompareT(v, y.(map[float32]any))
+	case map[float32]interface{}:
+		return mapCompareT(v, y.(map[float32]interface{}))
 	case map[float64]string:
 		return mapCompareT(v, y.(map[float64]string))
 	case map[float64]bool:
@@ -1042,8 +1048,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[float64]complex64))
 	case map[float64]complex128:
 		return mapCompareT(v, y.(map[float64]complex128))
-	case map[float64]any:
-		return mapCompareT(v, y.(map[float64]any))
+	case map[float64]interface{}:
+		return mapCompareT(v, y.(map[float64]interface{}))
 	case map[complex64]string:
 		return mapCompareT(v, y.(map[complex64]string))
 	case map[complex64]bool:
@@ -1076,8 +1082,8 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[complex64]complex64))
 	case map[complex64]complex128:
 		return mapCompareT(v, y.(map[complex64]complex128))
-	case map[complex64]any:
-		return mapCompareT(v, y.(map[complex64]any))
+	case map[complex64]interface{}:
+		return mapCompareT(v, y.(map[complex64]interface{}))
 	case map[complex128]string:
 		return mapCompareT(v, y.(map[complex128]string))
 	case map[complex128]bool:
@@ -1110,42 +1116,42 @@ func compareMapValue(a, b any, va, vb reflect.Value, mark bool) (int, error) {
 		return mapCompareT(v, y.(map[complex128]complex64))
 	case map[complex128]complex128:
 		return mapCompareT(v, y.(map[complex128]complex128))
-	case map[complex128]any:
-		return mapCompareT(v, y.(map[complex128]any))
-	case map[any]string:
-		return mapCompareT(v, y.(map[any]string))
-	case map[any]bool:
-		return mapCompareT(v, y.(map[any]bool))
-	case map[any]int:
-		return mapCompareT(v, y.(map[any]int))
-	case map[any]int8:
-		return mapCompareT(v, y.(map[any]int8))
-	case map[any]int16:
-		return mapCompareT(v, y.(map[any]int16))
-	case map[any]int32:
-		return mapCompareT(v, y.(map[any]int32))
-	case map[any]int64:
-		return mapCompareT(v, y.(map[any]int64))
-	case map[any]uint:
-		return mapCompareT(v, y.(map[any]uint))
-	case map[any]uint8:
-		return mapCompareT(v, y.(map[any]uint8))
-	case map[any]uint16:
-		return mapCompareT(v, y.(map[any]uint16))
-	case map[any]uint32:
-		return mapCompareT(v, y.(map[any]uint32))
-	case map[any]uint64:
-		return mapCompareT(v, y.(map[any]uint64))
-	case map[any]float32:
-		return mapCompareT(v, y.(map[any]float32))
-	case map[any]float64:
-		return mapCompareT(v, y.(map[any]float64))
-	case map[any]complex64:
-		return mapCompareT(v, y.(map[any]complex64))
-	case map[any]complex128:
-		return mapCompareT(v, y.(map[any]complex128))
-	case map[any]any:
-		return mapCompareT(v, y.(map[any]any))
+	case map[complex128]interface{}:
+		return mapCompareT(v, y.(map[complex128]interface{}))
+	case map[interface{}]string:
+		return mapCompareT(v, y.(map[interface{}]string))
+	case map[interface{}]bool:
+		return mapCompareT(v, y.(map[interface{}]bool))
+	case map[interface{}]int:
+		return mapCompareT(v, y.(map[interface{}]int))
+	case map[interface{}]int8:
+		return mapCompareT(v, y.(map[interface{}]int8))
+	case map[interface{}]int16:
+		return mapCompareT(v, y.(map[interface{}]int16))
+	case map[interface{}]int32:
+		return mapCompareT(v, y.(map[interface{}]int32))
+	case map[interface{}]int64:
+		return mapCompareT(v, y.(map[interface{}]int64))
+	case map[interface{}]uint:
+		return mapCompareT(v, y.(map[interface{}]uint))
+	case map[interface{}]uint8:
+		return mapCompareT(v, y.(map[interface{}]uint8))
+	case map[interface{}]uint16:
+		return mapCompareT(v, y.(map[interface{}]uint16))
+	case map[interface{}]uint32:
+		return mapCompareT(v, y.(map[interface{}]uint32))
+	case map[interface{}]uint64:
+		return mapCompareT(v, y.(map[interface{}]uint64))
+	case map[interface{}]float32:
+		return mapCompareT(v, y.(map[interface{}]float32))
+	case map[interface{}]float64:
+		return mapCompareT(v, y.(map[interface{}]float64))
+	case map[interface{}]complex64:
+		return mapCompareT(v, y.(map[interface{}]complex64))
+	case map[interface{}]complex128:
+		return mapCompareT(v, y.(map[interface{}]complex128))
+	case map[interface{}]interface{}:
+		return mapCompareT(v, y.(map[interface{}]interface{}))
 
 	}
 	return invalid, nil
