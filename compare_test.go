@@ -38,6 +38,19 @@ var (
 
 type Str string
 
+func show(r int, names ...string) {
+	switch r {
+	case equal:
+		fmt.Printf("%s is【equal】 %s\n", names[0], names[1])
+	case less:
+		fmt.Printf("%s is【less】than %s\n", names[0], names[1])
+	case greater:
+		fmt.Printf("%s is【greater】than %s\n", names[0], names[1])
+	default:
+		fmt.Println("invalid")
+	}
+}
+
 func TestEquals(t *testing.T) {
 	m1 := map[string]string{"sex": "man", "name": "aitao"}
 	m2 := map[string]string{"name": "aitao", "sex": "man"}
@@ -95,23 +108,41 @@ func TestCompare(t *testing.T) {
 	show(Compare(Str("aitax"), Str("aitao")), "aitax", "aitao")
 }
 
-func show(r int, names ...string) {
-	switch r {
-	case equal:
-		fmt.Printf("%s is【equal】than %s\n", names[0], names[1])
-	case less:
-		fmt.Printf("%s is【less】than %s\n", names[0], names[1])
-	case greater:
-		fmt.Printf("%s is【greater】than %s\n", names[0], names[1])
-	default:
-		fmt.Println("invalid")
-	}
-}
-
 func TestCompareAnySlice(t *testing.T) {
 	s1 := []any{"aitao", []string{"go", "python", "java"}, 100, true, 16.8}
 	s2 := []any{"aitao", []string{"go", "python", "java"}, 100, true, 16.8}
 	fmt.Println(Equals(s1, s2))
+}
+
+func TestReflectComparePrimitiveValue(t *testing.T) {
+	v1 := reflect.ValueOf(99)
+	v2 := reflect.ValueOf(99)
+	r, err := reflectComparePrimitiveValue(v1, v2)
+	if err != nil {
+		fmt.Println(err)
+	}
+	show(r, "v1", "v2")
+
+	v3 := reflect.ValueOf("aitao")
+	r, err = reflectComparePrimitiveValue(v1, v3)
+	if err != nil {
+		fmt.Println(err)
+	}
+	show(r, "v1", "v2")
+}
+
+func TestComparePrimitiveValue(t *testing.T) {
+	r, err := comparePrimitiveValue(1, 1)
+	if err != nil {
+		fmt.Println(err)
+	}
+	show(r, "v1", "v2")
+
+	r, err = comparePrimitiveValue(1, "1")
+	if err != nil {
+		fmt.Println(err)
+	}
+	show(r, "v1", "v2")
 }
 
 func BenchmarkCompare(b *testing.B) {

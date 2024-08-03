@@ -8,7 +8,7 @@ package comparator
  * @GitHub
  **/
 
-func Less(a, b any) bool {
+func Less(a, b interface{}) bool {
 	r, _ := compareValue(a, b, false)
 	return r == less
 }

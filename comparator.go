@@ -1,6 +1,7 @@
 package comparator
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -18,7 +19,7 @@ import (
 // New((int)0) 表示返回一个 int 类型的比较器
 // New((uint)0) 表示返回一个 uint 类型的比较器
 // New("") 	 表示返回一个 string 类型的比较器
-func New(defaultValue any) Type {
+func New(defaultValue interface{}) func(interface{}, interface{}) int {
 	switch defaultValue.(type) {
 	case string:
 		return String
@@ -61,18 +62,25 @@ func New(defaultValue any) Type {
 // Reverse(Int) 返回一个 int 类型的逆序比较器
 // Reverse(Int8) 返回一个 int 类型的逆序比较器
 // Reverse(New("")) 返回一个 string 类型的逆序比较器
-func Reverse(compare Type) Type {
-	return func(a, b any) int { return -compare(a, b) }
+func Reverse(compare func(interface{}, interface{}) int) func(interface{}, interface{}) int {
+	return func(a, b interface{}) int { return -compare(a, b) }
 }
 
 // Comparable 函数用于对 Comparable 类型数据进行类型断言, 并实现基础比较功能.
-func Comparable(x, y any) int {
-	a, b := x.(Iface), y.(Iface)
+func Comparable(x, y interface{}) int {
+	a, o1 := x.(Iface)
+	if !o1 {
+		panic(fmt.Sprintf("illegal argument: x is not an implementation type of the comparator.Iface: %T", x))
+	}
+	b, o2 := y.(Iface)
+	if !o2 {
+		panic(fmt.Sprintf("illegal argument: y is not an implementation type of the comparator.Iface: %T", y))
+	}
 	return a.CompareTo(b)
 }
 
 // Int 函数用于对 int 类型数据进行类型断言, 并实现基础比较功能.
-func Int(x, y any) int {
+func Int(x, y interface{}) int {
 	a, b := x.(int), y.(int)
 	switch {
 	case a > b:
@@ -85,7 +93,7 @@ func Int(x, y any) int {
 }
 
 // Int8 函数用于对 int8 类型数据进行类型断言, 并实现基础比较功能.
-func Int8(x, y any) int {
+func Int8(x, y interface{}) int {
 	a, b := x.(int8), y.(int8)
 	switch {
 	case a > b:
@@ -98,7 +106,7 @@ func Int8(x, y any) int {
 }
 
 // Int16 函数用于对 int16 类型数据进行类型断言, 并实现基础比较功能.
-func Int16(x, y any) int {
+func Int16(x, y interface{}) int {
 	a, b := x.(int16), y.(int16)
 	switch {
 	case a > b:
@@ -111,7 +119,7 @@ func Int16(x, y any) int {
 }
 
 // Int32 函数用于对 int32 类型数据进行类型断言, 并实现基础比较功能.
-func Int32(x, y any) int {
+func Int32(x, y interface{}) int {
 	a, b := x.(int32), y.(int32)
 	switch {
 	case a > b:
@@ -124,7 +132,7 @@ func Int32(x, y any) int {
 }
 
 // Int64 函数用于对 int64 类型数据进行类型断言, 并实现基础比较功能.
-func Int64(x, y any) int {
+func Int64(x, y interface{}) int {
 	a, b := x.(int64), y.(int64)
 	switch {
 	case a > b:
@@ -137,7 +145,7 @@ func Int64(x, y any) int {
 }
 
 // Uint 函数用于对 uint 类型数据进行类型断言, 并实现基础比较功能.
-func Uint(x, y any) int {
+func Uint(x, y interface{}) int {
 	a, b := x.(uint), y.(uint)
 	switch {
 	case a > b:
@@ -150,7 +158,7 @@ func Uint(x, y any) int {
 }
 
 // Uint8 函数用于对 uint8 类型数据进行类型断言, 并实现基础比较功能.
-func Uint8(x, y any) int {
+func Uint8(x, y interface{}) int {
 	a, b := x.(uint8), y.(uint8)
 	switch {
 	case a > b:
@@ -163,7 +171,7 @@ func Uint8(x, y any) int {
 }
 
 // Uint16 函数用于对 uint16 类型数据进行类型断言, 并实现基础比较功能.
-func Uint16(x, y any) int {
+func Uint16(x, y interface{}) int {
 	a, b := x.(uint16), y.(uint16)
 	switch {
 	case a > b:
@@ -176,7 +184,7 @@ func Uint16(x, y any) int {
 }
 
 // Uint32 函数用于对 uint32 类型数据进行类型断言, 并实现基础比较功能.
-func Uint32(x, y any) int {
+func Uint32(x, y interface{}) int {
 	a, b := x.(uint32), y.(uint32)
 	switch {
 	case a > b:
@@ -189,7 +197,7 @@ func Uint32(x, y any) int {
 }
 
 // Uint64 函数用于对 uint64 类型数据进行类型断言, 并实现基础比较功能.
-func Uint64(x, y any) int {
+func Uint64(x, y interface{}) int {
 	a, b := x.(uint64), y.(uint64)
 	switch {
 	case a > b:
@@ -202,7 +210,7 @@ func Uint64(x, y any) int {
 }
 
 // Float32 函数用于对 float32 类型数据进行类型断言, 并实现基础比较功能.
-func Float32(x, y any) int {
+func Float32(x, y interface{}) int {
 	a, b := x.(float32), y.(float32)
 	switch {
 	case a > b:
@@ -215,7 +223,7 @@ func Float32(x, y any) int {
 }
 
 // Float64 函数用于对 float64 类型数据进行类型断言, 并实现基础比较功能.
-func Float64(x, y any) int {
+func Float64(x, y interface{}) int {
 	a, b := x.(float64), y.(float64)
 	switch {
 	case a > b:
@@ -228,7 +236,7 @@ func Float64(x, y any) int {
 }
 
 // String 函数用于对 string 类型数据进行类型断言, 并实现基础比较功能.
-func String(x, y any) int {
+func String(x, y interface{}) int {
 	a, b := x.(string), y.(string)
 	switch {
 	case a > b:
@@ -241,7 +249,7 @@ func String(x, y any) int {
 }
 
 // Time 函数用于对 time.Time 类型数据进行类型断言, 并实现基础比较功能.
-func Time(x, y any) int {
+func Time(x, y interface{}) int {
 	a, b := x.(time.Time), y.(time.Time)
 	switch {
 	case a.After(b):
@@ -254,7 +262,7 @@ func Time(x, y any) int {
 }
 
 // Bool 函数用于对 bool 类型数据进行类型断言, 并实现基础比较功能.
-func Bool(x, y any) int {
+func Bool(x, y interface{}) int {
 	a, b := x.(bool), y.(bool)
 	switch {
 	case a == b:
@@ -267,7 +275,7 @@ func Bool(x, y any) int {
 }
 
 // Complex64 函数用于对 complex64 类型数据进行类型断言, 并实现基础比较功能.
-func Complex64(a, b any) int {
+func Complex64(a, b interface{}) int {
 	if x, y := a.(complex64), b.(complex64); x == y {
 		return 0
 	} else if rx, ry := real(x), real(y); rx < ry {
@@ -280,7 +288,7 @@ func Complex64(a, b any) int {
 }
 
 // Complex128 函数用于对 complex128 类型数据进行类型断言, 并实现基础比较功能.
-func Complex128(a, b any) int {
+func Complex128(a, b interface{}) int {
 	if x, y := a.(complex128), b.(complex128); x == y {
 		return 0
 	} else if rx, ry := real(x), real(y); rx < ry {
@@ -293,7 +301,7 @@ func Complex128(a, b any) int {
 }
 
 // Byte 函数用于对 byte 类型数据进行类型断言, 并实现基础比较功能.
-func Byte(x, y any) int {
+func Byte(x, y interface{}) int {
 	a, b := x.(byte), y.(byte)
 	switch {
 	case a > b:
@@ -306,7 +314,7 @@ func Byte(x, y any) int {
 }
 
 // Rune 函数用于对 rune 类型数据进行类型断言, 并实现基础比较功能.
-func Rune(x, y any) int {
+func Rune(x, y interface{}) int {
 	a, b := x.(rune), y.(rune)
 	switch {
 	case a > b:
@@ -319,7 +327,7 @@ func Rune(x, y any) int {
 }
 
 // Error 函数用于对 error 类型数据进行类型断言, 并实现基础比较功能.
-func Error(x, y any) int {
+func Error(x, y interface{}) int {
 	a, b := x.(error).Error(), y.(error).Error()
 	switch {
 	case a > b:

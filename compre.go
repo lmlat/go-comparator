@@ -126,7 +126,9 @@ func reflectCompareValue(a, b interface{}, va, vb reflect.Value, rmark bool) (r 
 func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 	switch v1 := a.(type) {
 	case string:
-		if v2 := b.(string); v1 == v2 {
+		if v2, ok := b.(string); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -134,7 +136,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case bool:
-		if v2 := b.(bool); v1 == v2 {
+		if v2, ok := b.(bool); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v2 {
 			return less, nil
@@ -142,7 +146,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case int:
-		if v2 := b.(int); v1 == v2 {
+		if v2, ok := b.(int); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -150,7 +156,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case int8:
-		if v2 := b.(int8); v1 == v2 {
+		if v2, ok := b.(int8); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -158,7 +166,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case int16:
-		if v2 := b.(int16); v1 == v2 {
+		if v2, ok := b.(int16); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -166,7 +176,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case int32:
-		if v2 := b.(int32); v1 == v2 {
+		if v2, ok := b.(int32); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -174,7 +186,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case int64:
-		if v2 := b.(int64); v1 == v2 {
+		if v2, ok := b.(int64); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -182,7 +196,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case uint:
-		if v2 := b.(uint); v1 == v2 {
+		if v2, ok := b.(uint); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -190,7 +206,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case uint8:
-		if v2 := b.(uint8); v1 == v2 {
+		if v2, ok := b.(uint8); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -198,7 +216,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case uint16:
-		if v2 := b.(uint16); v1 == v2 {
+		if v2, ok := b.(uint16); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -206,7 +226,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case uint32:
-		if v2 := b.(uint32); v1 == v2 {
+		if v2, ok := b.(uint32); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -214,7 +236,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case uint64:
-		if v2 := b.(uint64); v1 == v2 {
+		if v2, ok := b.(uint64); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -222,7 +246,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case float32:
-		if v2 := b.(float32); v1 == v2 {
+		if v2, ok := b.(float32); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -230,7 +256,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case float64:
-		if v2 := b.(float64); v1 == v2 {
+		if v2, ok := b.(float64); !ok {
+			return invalid, typeNotMathError
+		} else if v1 == v2 {
 			return equal, nil
 		} else if v1 < v2 {
 			return less, nil
@@ -238,7 +266,10 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case complex64:
-		v2 := b.(complex64)
+		v2, ok := b.(complex64)
+		if !ok {
+			return invalid, typeNotMathError
+		}
 		if v1r, v1i, v2r, v2i := real(v1), imag(v1), real(v2), imag(v2); v1 == v2 {
 			return equal, nil
 		} else if v1r < v2r || (v1r == v2r && v1i < v2i) {
@@ -247,7 +278,10 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 			return greater, nil
 		}
 	case complex128:
-		v2 := b.(complex128)
+		v2, ok := b.(complex128)
+		if !ok {
+			return invalid, typeNotMathError
+		}
 		if v1r, v1i, v2r, v2i := real(v1), imag(v1), real(v2), imag(v2); v1 == v2 {
 			return equal, nil
 		} else if v1r < v2r || (v1r == v2r && v1i < v2i) {
@@ -267,9 +301,9 @@ func comparePrimitiveValue(a, b interface{}) (r int, e error) {
 func reflectComparePrimitiveValue(va, vb reflect.Value) (int, error) {
 	switch va.Kind() {
 	case reflect.Bool:
-		x := va.Bool()
-		y := vb.Bool()
-		if x == y {
+		if vb.Kind() != reflect.Bool {
+			return invalid, typeNotMathError
+		} else if x, y := va.Bool(), vb.Bool(); x == y {
 			return equal, nil
 		} else if !x && y {
 			return less, nil
@@ -277,9 +311,9 @@ func reflectComparePrimitiveValue(va, vb reflect.Value) (int, error) {
 			return greater, nil
 		}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		x := va.Int()
-		y := vb.Int()
-		if x == y {
+		if k := vb.Kind(); k != reflect.Int && k != reflect.Int8 && k != reflect.Int16 && k != reflect.Int32 && k != reflect.Int64 {
+			return invalid, typeNotMathError
+		} else if x, y := va.Int(), vb.Int(); x == y {
 			return equal, nil
 		} else if x < y {
 			return less, nil
@@ -287,9 +321,9 @@ func reflectComparePrimitiveValue(va, vb reflect.Value) (int, error) {
 			return greater, nil
 		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		x := va.Uint()
-		y := vb.Uint()
-		if x == y {
+		if k := vb.Kind(); k != reflect.Uint8 && k != reflect.Uint16 && k != reflect.Uint32 && k != reflect.Uint64 && k != reflect.Uintptr {
+			return invalid, typeNotMathError
+		} else if x, y := va.Uint(), vb.Uint(); x == y {
 			return equal, nil
 		} else if x < y {
 			return less, nil
@@ -297,9 +331,9 @@ func reflectComparePrimitiveValue(va, vb reflect.Value) (int, error) {
 			return greater, nil
 		}
 	case reflect.Float32, reflect.Float64:
-		x := va.Float()
-		y := vb.Float()
-		if x == y {
+		if k := vb.Kind(); k != reflect.Float32 && k != reflect.Float64 {
+			return invalid, typeNotMathError
+		} else if x, y := va.Float(), vb.Float(); x == y {
 			return equal, nil
 		} else if x < y {
 			return less, nil
@@ -307,9 +341,9 @@ func reflectComparePrimitiveValue(va, vb reflect.Value) (int, error) {
 			return greater, nil
 		}
 	case reflect.Complex64, reflect.Complex128:
-		x := va.Complex()
-		y := vb.Complex()
-		if x == y {
+		if k := vb.Kind(); k != reflect.Complex64 && k != reflect.Complex128 {
+			return invalid, typeNotMathError
+		} else if x, y := va.Complex(), vb.Complex(); x == y {
 			return equal, nil
 		} else if real(x) < real(y) || (real(x) == real(y) && imag(x) < imag(y)) { // 先比较实部，再比较虚部
 			return less, nil
@@ -317,9 +351,9 @@ func reflectComparePrimitiveValue(va, vb reflect.Value) (int, error) {
 			return greater, nil
 		}
 	case reflect.String:
-		x := va.String()
-		y := vb.String()
-		if x == y {
+		if vb.Kind() != reflect.String {
+			return invalid, typeNotMathError
+		} else if x, y := va.String(), vb.String(); x == y {
 			return equal, nil
 		} else if x < y {
 			return less, nil
@@ -430,13 +464,13 @@ func sliceCompareT[T comparable](s1, s2 []T) (r int, e error) {
 func sliceCompareAny(s1, s2 []interface{}) (r int, e error) {
 	if x, y := len(s1), len(s2); x == y {
 		for i := 0; i < x; i++ {
-			if asPrimitive(s1[i]) && asPrimitive(s2[i]) {
+			if asPrimitive(s1[i]) {
 				if r, e = comparePrimitiveValue(s1[i], s2[i]); r != equal {
 					return r, e
 				}
 			} else {
 				v1, v2 := reflect.ValueOf(s1[i]), reflect.ValueOf(s2[i])
-				if r, e = reflectCompareValue(s1[i], s2[i], v1, v2, true); r != equal {
+				if r, e = reflectCompareValue(s1[i], s2[i], v1, v2, false); r != equal {
 					return r, e
 				}
 			}
@@ -483,7 +517,9 @@ func compareSliceValue(a, b interface{}, va, vb reflect.Value, mark bool) (r int
 	}
 	switch v1 := x.(type) {
 	case []byte:
-		if r := bytes.Compare(v1, y.([]byte)); r == 0 {
+		if v2, ok := y.([]byte); !ok {
+			return invalid, valueNotMatchError
+		} else if r := bytes.Compare(v1, v2); r == 0 {
 			return equal, nil
 		} else if r < 0 {
 			return less, nil
@@ -491,35 +527,101 @@ func compareSliceValue(a, b interface{}, va, vb reflect.Value, mark bool) (r int
 			return greater, nil
 		}
 	case []string:
-		return sliceCompareT(v1, y.([]string))
+		v2, ok := y.([]string)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []bool:
-		return sliceCompareT(v1, y.([]bool))
+		v2, ok := y.([]bool)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []int:
-		return sliceCompareT(v1, y.([]int))
+		v2, ok := y.([]int)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
+	case []int8:
+		v2, ok := y.([]int8)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []int16:
-		return sliceCompareT(v1, y.([]int16))
+		v2, ok := y.([]int16)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []int32:
-		return sliceCompareT(v1, y.([]int32))
+		v2, ok := y.([]int32)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []int64:
-		return sliceCompareT(v1, y.([]int64))
+		v2, ok := y.([]int64)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []uint:
-		return sliceCompareT(v1, y.([]uint))
+		v2, ok := y.([]uint)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []uint16:
-		return sliceCompareT(v1, y.([]uint16))
+		v2, ok := y.([]uint16)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []uint32:
-		return sliceCompareT(v1, y.([]uint32))
+		v2, ok := y.([]uint32)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []uint64:
-		return sliceCompareT(v1, y.([]uint64))
+		v2, ok := y.([]uint64)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []float32:
-		return sliceCompareT(v1, y.([]float32))
+		v2, ok := y.([]float32)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []float64:
-		return sliceCompareT(v1, y.([]float64))
+		v2, ok := y.([]float64)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []complex64:
-		return sliceCompareT(v1, y.([]complex64))
+		v2, ok := y.([]complex64)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []complex128:
-		return sliceCompareT(v1, y.([]complex128))
+		v2, ok := y.([]complex128)
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareT(v1, v2)
 	case []interface{}:
-		return sliceCompareAny(v1, y.([]interface{}))
+		v2, ok := y.([]interface{})
+		if !ok {
+			return invalid, valueNotMatchError
+		}
+		return sliceCompareAny(v1, v2)
 	}
 	return invalid, nil
 }

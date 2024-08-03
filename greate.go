@@ -8,7 +8,7 @@ package comparator
  * @GitHub
  **/
 
-func Greater(a, b any) bool {
+func Greater(a, b interface{}) bool {
 	r, _ := compareValue(a, b, false)
 	return r == greater
 }

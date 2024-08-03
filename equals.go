@@ -8,7 +8,7 @@ package comparator
  * @GitHub
  **/
 
-func Equals(a, b any) bool {
+func Equals(a, b interface{}) bool {
 	r, _ := compareValue(a, b, false)
 	return r == equal
 }
